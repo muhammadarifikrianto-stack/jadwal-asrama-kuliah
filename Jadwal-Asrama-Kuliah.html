@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080e1b">
+  <title>Jadwal Asrama & Kuliah PKN STAN</title>
+  
+  <!-- Font Inter: Sangat jernih, tajam, dan mudah dibaca -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root { 
+      --ink: #eef4ff; 
+      --muted: #9cadc8; 
+      --line: rgba(173,195,228,.15); 
+      --surface: #101a2d; 
+      --surface-2: #151f35; 
+      --canvas: #080e1b; 
+      --blue: #4facfe; 
+      --cyan: #00f2fe; 
+      --gold: #ffd881; 
+      --green: #7be39f; 
+      --radius: 20px; 
+    }
+    
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { 
+      margin: 0; 
+      min-width: 320px; 
+      background: var(--canvas); 
+      color: var(--ink); 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+    }
+    
+    button, textarea { font: inherit; }
+    button { color: inherit; border: none; }
+    button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+    a { text-decoration: none; }
+    
+    .shell { max-width: 1200px; padding: 30px 24px; margin: auto; }
+    
+    /* =======================================
+       HERO SECTION (JUDUL & TANGGAL BESAR)
+       ======================================= */
+    .hero { 
+      position: relative; 
+      overflow: hidden; 
+      padding: clamp(40px, 8vw, 70px) 20px; 
+      background: linear-gradient(135deg, #152440 0%, #0d1727 100%); 
+      border: 1px solid var(--line); 
+      border-radius: 28px; 
+      text-align: center;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    
+    .hero:after { 
+      content: ""; 
+      position: absolute; 
+      width: 400px; 
+      height: 400px; 
+      border-radius: 50%; 
+      right: -100px; 
+      top: -200px; 
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.15), transparent 70%); 
+      pointer-events: none; 
+    }
+
+    h1.main-title { 
+      position: relative; 
+      z-index: 1; 
+      margin: 0 auto 20px; 
+      font-size: clamp(2.5rem, 6vw, 4.5rem); 
+      line-height: 1.1; 
+      font-weight: 900; 
+      letter-spacing: -0.04em;
+      color: #ffffff;
+    }
+
+    /* Highlight Tanggal */
+    .date-highlight {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      background: rgba(0, 242, 254, 0.1);
+      border: 2px solid rgba(0, 242, 254, 0.4);
+      padding: 15px 35px;
+      border-radius: 100px;
+      margin: 0 auto 30px;
+    }
+
+    .date-highlight #today-label { 
+      color: var(--cyan); 
+      font-size: clamp(1.2rem, 3vw, 1.6rem);
+      font-weight: 800; 
+      letter-spacing: -0.02em;
+    }
+    
+    .date-highlight .timezone { 
+      color: var(--ink); 
+      font-size: clamp(0.9rem, 1.5vw, 1rem);
+      font-weight: 500;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .hero-actions { 
+      position: relative; 
+      z-index: 1; 
+      display: flex; 
+      flex-wrap: wrap; 
+      justify-content: center;
+      gap: 12px; 
+    }
+
+    .btn { 
+      border-radius: 12px; 
+      padding: 12px 24px; 
+      cursor: pointer; 
+      font-weight: 700; 
+      font-size: 1rem;
+      transition: all 0.2s ease; 
+    }
+    .btn.primary { color: #07101e; background: var(--cyan); }
+    .btn.primary:hover { background: #33f4fe; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 242, 254, 0.3); }
+    .btn.ghost { background: rgba(255,255,255,.05); border: 1px solid var(--line); color: var(--ink); }
+    .btn.ghost:hover { background: rgba(255,255,255,.1); transform: translateY(-2px); }
+
+    .focus-active .helper, .focus-active .secondary-grid, .focus-active .footer { display: none; }
+    
+    /* =======================================
+       LAYOUT UTAMA
+       ======================================= */
+    .main-grid { 
+      display: grid; 
+      grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr); 
+      gap: 24px; 
+      align-items: start; 
+    }
+    
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .live { padding: 30px; }
+    
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 24px; }
+    .label { margin: 0; color: var(--cyan); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; }
+    h2 { margin: 6px 0 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; }
+    
+    .clock { color: var(--gold); font-size: 1.15rem; font-variant-numeric: tabular-nums; font-weight: 800; background: rgba(255, 216, 129, 0.1); padding: 8px 14px; border-radius: 10px;}
+    
+    /* Kartu Live Status */
+    .live-card { padding: 25px; border-radius: 16px; background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(79, 172, 254, 0.05)); border: 1px solid rgba(0, 242, 254, 0.25); }
+    .live-state { color: var(--cyan); font-size: 0.85rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .live-card h3 { margin: 12px 0 8px; font-size: clamp(1.4rem, 3vw, 1.8rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.3;}
+    .live-card p { margin: 0; color: #c1d0e7; font-size: 1.05rem; font-weight: 500;}
+    
+    .progress-track { height: 8px; margin-top: 22px; overflow: hidden; background: rgba(255,255,255,.05); border-radius: 99px; }
+    .progress { width: 0; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--blue)); border-radius: inherit; transition: width 0.4s ease; }
+    
+    .next-row { display: flex; gap: 14px; align-items: center; margin-top: 22px; color: var(--muted); font-size: 1rem; font-weight: 600;}
+    .time-chip { flex: 0 0 auto; padding: 6px 10px; border-radius: 8px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); font-size: 0.9rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    
+    /* =======================================
+       PUSAT INFORMASI KANAN
+       ======================================= */
+    .side { padding: 30px; }
+    .info-details { display: grid; gap: 16px; margin-top: 24px; margin-bottom: 24px;}
+    .info-item { padding: 18px; background: var(--surface-2); border-radius: 14px; border: 1px solid rgba(255,255,255,0.04); }
+    .info-item b { display: block; margin-bottom: 8px; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+    .info-item span { color: var(--muted); font-size: 0.95rem; display: block; line-height: 1.5; font-weight: 500;}
+    
+    .quick-actions { display: grid; gap: 14px; }
+    .quick { 
+      display: block;
+      width: 100%; 
+      padding: 15px 16px; 
+      text-align: center; 
+      border-radius: 12px; 
+      font-size: 1rem;
+      font-weight: 700; 
+      transition: all 0.2s ease;
+    }
+    
+    .action-makan { background: rgba(255, 216, 129, 0.1); border: 1px solid rgba(255, 216, 129, 0.3); color: var(--gold); }
+    .action-makan:hover { background: var(--gold); color: var(--canvas); }
+    
+    .action-bukti { background: rgba(123, 227, 159, 0.1); border: 1px solid rgba(123, 227, 159, 0.3); color: var(--green); }
+    .action-bukti:hover { background: var(--green); color: var(--canvas); }
+    
+    .action-jadwal { background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); color: var(--cyan); }
+    .action-jadwal:hover { background: var(--cyan); color: var(--canvas); }
+
+    /* =======================================
+       JADWAL HARIAN (TIMELINE)
+       ======================================= */
+    .schedule { margin-top: 24px; padding: 30px; }
+    .schedule-top { display: flex; justify-content: space-between; gap: 18px; align-items: end; margin-bottom: 24px; }
+    
+    .tabs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 10px; scrollbar-color: #496485 transparent; }
+    .tabs::-webkit-scrollbar { height: 6px; }
+    .tabs::-webkit-scrollbar-track { background: transparent; }
+    .tabs::-webkit-scrollbar-thumb { background: #2a3a5a; border-radius: 10px; }
+    
+    .tab { flex: 0 0 auto; padding: 12px 18px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); background: transparent; cursor: pointer; font-size: 0.95rem; font-weight: 700; transition: all 0.2s; }
+    .tab:hover { color: var(--ink); background: rgba(255,255,255,.05); }
+    .tab[aria-selected="true"] { color: #081421; background: var(--cyan); border-color: var(--cyan); }
+    
+    .monday-switch { display: none; gap: 12px; align-items: center; margin: 0 0 24px; }
+    .monday-switch.show { display: flex; }
+    .switch-caption { color: var(--muted); font-size: 0.95rem; font-weight: 600; }
+    .variant { padding: 8px 16px; border: 1px solid var(--line); border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; font-size: 0.9rem; font-weight: 700; transition: 0.2s; }
+    .variant.active { color: var(--cyan); border-color: rgba(0, 242, 254, 0.5); background: rgba(0, 242, 254, 0.1); }
+    
+    .timeline { display: grid; gap: 8px; }
+    .item { display: grid; grid-template-columns: 110px 24px 1fr; gap: 15px; padding: 18px 14px; border-radius: 16px; transition: background 0.2s; }
+    .item:hover { background: rgba(255,255,255,.03); }
+    .item.active { background: rgba(0, 242, 254, 0.08); border: 1px solid rgba(0, 242, 254, 0.15); }
+    .item.next { outline: 1px dashed rgba(255,216,129,.5); outline-offset: -1px; }
+    
+    .item-time { padding-top: 2px; color: var(--muted); font-size: 0.95rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .rail { position: relative; min-height: 40px; }
+    .rail:before { content: ""; position: absolute; left: 11px; top: 8px; bottom: -28px; width: 2px; background: var(--line); }
+    .item:last-child .rail:before { display: none; }
+    .node { position: absolute; top: 6px; left: 4px; width: 16px; height: 16px; border: 3px solid #2a3a5a; border-radius: 50%; background: var(--surface); transition: all 0.3s;}
+    
+    .active .node { border-color: var(--cyan); background: var(--cyan); box-shadow: 0 0 0 6px rgba(0, 242, 254, 0.15); }
+    .next .node { border-color: var(--gold); }
+    
+    .item h3 { margin: 0; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; color: var(--ink);}
+    .item p { margin: 4px 0 0; color: var(--muted); font-size: 1rem; line-height: 1.5; font-weight: 500;}
+    .tag { display: inline-flex; margin-top: 10px; padding: 5px 12px; border-radius: 8px; color: #081421; background: var(--cyan); font-size: 0.85rem; font-weight: 800; }
+    
+    /* Notes Khusus */
+    .notes-container { margin-top: 24px; }
+    textarea { width: 100%; min-height: 120px; margin-top: 20px; resize: vertical; border: 1px solid var(--line); border-radius: 16px; padding: 18px; background: rgba(0,0,0,0.2); color: var(--ink); font-size: 1rem; line-height: 1.6; }
+    .save-note { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; color: var(--muted); font-size: 0.9rem; font-weight: 500;}
+    .save-note button { padding: 8px 16px; border-radius: 8px; font-weight: 600;}
+    
+    .toast { position: fixed; z-index: 100; left: 50%; bottom: 30px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 12px 24px; border: 1px solid rgba(0, 242, 254, 0.4); border-radius: 12px; background: #0a192f; color: #eef4ff; font-weight: 600; font-size: 1rem; box-shadow: 0 15px 30px rgba(0,0,0,.5); transition: 0.3s ease; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    
+    .footer { text-align: center; margin: 40px 0 20px; color: #5a6b8a; font-size: 0.9rem; font-weight: 500;}
+    
+    @media (max-width: 860px) { 
+      .main-grid { grid-template-columns: 1fr; } 
+    }
+    @media (max-width: 560px) { 
+      .hero { padding: 30px 15px; }
+      h1.main-title { font-size: 2.2rem; }
+      .date-highlight { padding: 12px 20px; }
+      .schedule-top { flex-direction: column; align-items: flex-start; } 
+      .item { grid-template-columns: 85px 16px 1fr; gap: 10px; padding-inline: 4px; } 
+      .rail:before { left: 7px; }
+      .node { left: 2px; width: 12px; height: 12px; }
+      .item h3 { font-size: 1.05rem; }
+      .item-time { font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    
+    <section class="hero">
+      <h1 class="main-title">Jadwal Asrama & Kuliah</h1>
+      <div class="date-highlight">
+        <div id="today-label">Memuat tanggal...</div>
+        <div class="timezone">Waktu Indonesia Barat (WIB)</div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn primary" id="jump-today">Fokus ke Hari Ini</button>
+        <button class="btn ghost" id="focus-toggle" aria-pressed="false">◐ Mode Fokus</button>
+      </div>
+    </section>
+
+    <div class="main-grid">
+      <!-- Kiri: Aktivitas Berjalan -->
+      <section class="panel live">
+        <div class="panel-head">
+          <div>
+            <p class="label">Status Saat Ini</p>
+            <h2>Aktivitas Sedang Berlangsung</h2>
+          </div>
+          <time class="clock" id="clock">--:-- WIB</time>
+        </div>
+        <div class="live-card">
+          <div class="live-state" id="live-state">MEMUAT STATUS</div>
+          <h3 id="live-title-text">Memuat aktivitas...</h3>
+          <p id="live-description">Sebentar lagi detail agenda hari ini akan muncul di sini.</p>
+          <div class="progress-track" aria-label="Progres kegiatan"><div class="progress" id="progress"></div></div>
+        </div>
+        <div class="next-row">
+          <span class="time-chip" id="next-time">--:--</span>
+          <span id="next-text">Menemukan kegiatan berikutnya…</span>
+        </div>
+      </section>
+
+      <!-- Kanan: Informasi & Tombol Cepat -->
+      <aside class="panel side">
+        <div class="panel-head" style="margin-bottom: 10px;">
+          <div>
+            <p class="label">Pusat Informasi</p>
+            <h2>Informasi & Tautan Penting</h2>
+          </div>
+        </div>
+        
+        <div class="info-details">
+          <div class="info-item">
+            <b>🧹 Pembersihan Asrama (05.30 - 06.00 WIB)</b>
+            <span>Wajib dilaksanakan setiap hari.<br>Batas akhir pengiriman bukti pelaksanaan adalah pukul 09.00 WIB.</span>
+          </div>
+          <div class="info-item">
+            <b>🍽️ Makan Siang (11.30 - 14.00 WIB)</b>
+            <span>Hari Senin–Jumat wajib presensi.<br>Sabtu hanya makan pagi, Minggu tidak ada konsumsi.</span>
+          </div>
+          <div class="info-item">
+            <b>⚠️ Aturan Akhir Pekan</b>
+            <span>Jumat hingga Minggu diperbolehkan seharian di kamar.<br>Batas akhir kembali dari pesiar adalah pukul 20.30 WIB.</span>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <a href="https://staner.id/PresensiMakan" target="_blank" class="quick action-makan">Absensi Makan Siang</a>
+          <a href="https://staner.id/TimestampPembersihanCB" target="_blank" class="quick action-bukti">Kirim Bukti Pembersihan</a>
+          <a href="https://staner.id/JadwalPiketKomandoCB" target="_blank" class="quick action-jadwal">Cek Pembagian Kebersihan</a>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Jadwal Lengkap -->
+    <section class="panel schedule" id="schedule-section">
+      <div class="schedule-top">
+        <div>
+          <p class="label">Rencana Lengkap</p>
+          <h2>Jadwal Harian</h2>
+        </div>
+      </div>
+      
+      <div class="tabs" role="tablist" aria-label="Pilih hari" id="day-tabs"></div>
+      
+      <div class="monday-switch" id="monday-switch">
+        <span class="switch-caption">Pilih Variasi Senin:</span>
+        <button class="variant active" data-variant="Upacara">Upacara</button>
+        <button class="variant" data-variant="Apel">Apel</button>
+      </div>
+      
+      <div class="timeline" id="timeline" role="tabpanel"></div>
+    </section>
+
+    <!-- Catatan Pribadi -->
+    <section class="panel live notes-container helper">
+      <div class="panel-head" style="margin-bottom: 0;">
+        <div>
+          <p class="label">Ruang Pribadi</p>
+          <h2>Catatan Asrama</h2>
+        </div>
+      </div>
+      <textarea id="notes" placeholder="Ketik catatan di sini... (Tersimpan otomatis di perangkat)"></textarea>
+      <div class="save-note">
+        <span id="save-state">Tersimpan otomatis.</span>
+        <button class="btn ghost" id="clear-notes">Hapus Catatan</button>
+      </div>
+    </section>
+
+    <footer class="footer">
+      Seluruh jadwal tersimpan di perangkat lokal. Waktu mengikuti standar WIB.
+    </footer>
+  </main>
+  
+  <div class="toast" role="status" aria-live="polite" id="toast"></div>
+
+  <script>
+    const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const weekdayMap = { Sunday:'Minggu', Monday:'Senin', Tuesday:'Selasa', Wednesday:'Rabu', Thursday:'Kamis', Friday:'Jumat', Saturday:'Sabtu' };
+    
+    const event = (start,end,title,desc,meta='') => ({start,end,title,desc,meta});
+    const schedule = {
+      Senin: {
+        Upacara: [
+          event('00:00','04:00','Istirahat Malam',''),
+          event('04:00','04:44','Bangun Tidur',''),
+          event('04:44','04:49','Presensi Ibadah (Mhs Muslim)',''),
+          event('04:49','05:00','Sholat di depan lift masing-masing',''),
+          event('05:00','05:30','Persiapan Pagi',''),
+          event('05:30','05:35','Batas Turun',''),
+          event('05:35','05:45','Makan Pagi',''),
+          event('05:45','05:50','Persiapan Moving ke lapangan Apel',''),
+          event('05:50','07:15','Pelaksanaan Upacara / Apel',''),
+          event('07:15','10:30','Kegiatan Produktif','(Tidak diperbolehkan kembali ke kamar)'),
+          event('10:30','13:00','Perkuliahan','Pengantar Akuntansi II • Ruang N 209','Kuliah'),
+          event('13:00','14:00','Istirahat Siang','Lakukan presensi makan siang'),
+          event('14:00','16:30','Perkuliahan','Ekonomi Mikro • Ruang N 209','Kuliah'),
+          event('16:30','17:45','Pembersihan Diri & Kamar',''),
+          event('17:45','17:55','Persiapan',''),
+          event('17:55','18:15','Persiapan Ibadah & Presensi',''),
+          event('18:15','18:20','Batas Turun Makan Malam',''),
+          event('18:20','18:35','Mulai Makan',''),
+          event('18:35','18:40','Jeda',''),
+          event('18:40','18:50','Moving',''),
+          event('18:50','19:10','Sholat Isya',''),
+          event('19:10','19:20','Moving Kembali ke Asrama (mhs muslim)',''),
+          event('19:20','20:45','Kegiatan Mandiri',''),
+          event('20:45','21:00','Persiapan Apel',''),
+          event('21:00','22:00','Apel Malam',''),
+          event('22:00','24:00','Tidur','')
+        ],
+        Apel: [
+          event('00:00','04:00','Tidur',''),
+          event('04:00','04:20','Bangun Tidur',''),
+          event('04:20','04:35','Presensi dan Ibadah Non Muslim',''),
+          event('04:35','04:40','Persiapan',''),
+          event('04:40','04:45','Presensi Ibadah Mahasiswa Muslim',''),
+          event('04:45','04:50','Moving ke MAS',''),
+          event('04:50','05:10','Ibadah Pagi/Salat Subuh',''),
+          event('05:10','05:20','Moving ke Asrama',''),
+          event('05:20','05:30','Pembersihan Diri & Kamar',''),
+          event('05:30','06:00','Pembersihan Umum (Cipta Bakti)',''),
+          event('06:00','06:05','Persiapan Turun',''),
+          event('06:05','06:25','Makan Pagi Komando',''),
+          event('06:25','06:30','Persiapan Apel Pagi',''),
+          event('06:30','07:15','Apel Pagi',''),
+          event('07:15','10:30','Kegiatan Produktif','(Tidak diperbolehkan kembali ke kamar)'),
+          event('10:30','13:00','Perkuliahan','Pengantar Akuntansi II • Ruang N 209','Kuliah'),
+          event('13:00','14:00','Istirahat Siang','Lakukan presensi makan siang'),
+          event('14:00','16:30','Perkuliahan','Ekonomi Mikro • Ruang N 209','Kuliah'),
+          event('16:30','17:45','Kegiatan Produktif',''),
+          event('17:45','17:55','Pembersihan Diri & Kamar',''),
+          event('17:55','18:25','Persiapan Ibadah & Presensi Ibadah',''),
+          event('18:25','18:50','Makan Malam Komando','(Batas Turun 18.25)'),
+          event('18:50','18:55','Presensi Ibadah Mahasiswa Muslim',''),
+          event('18:55','19:10','Moving Ke MAS',''),
+          event('19:10','19:20','Ibadah Isya',''),
+          event('19:20','19:30','Moving Kembali ke Asrama (mhs Muslim)',''),
+          event('19:30','20:00','Kegiatan Mandiri',''),
+          event('20:00','21:15','Pengecekan Malam (Di Depan Lift)',''),
+          event('21:15','24:00','Tidur','')
+        ]
+      },
+      Selasa: [
+        event('00:00','04:00','Tidur',''),
+        event('04:00','04:20','Bangun Tidur',''),
+        event('04:20','04:35','Presensi dan Ibadah Non Muslim',''),
+        event('04:35','04:40','Persiapan',''),
+        event('04:40','04:45','Presensi Ibadah Mahasiswa Muslim',''),
+        event('04:45','04:50','Moving ke MAS',''),
+        event('04:50','05:10','Ibadah Pagi/Salat Subuh',''),
+        event('05:10','05:20','Moving ke Asrama',''),
+        event('05:20','05:30','Pembersihan Diri & Kamar',''),
+        event('05:30','06:00','Pembersihan Umum (Cipta Bakti)',''),
+        event('06:00','06:05','Persiapan Turun',''),
+        event('06:05','06:25','Makan Pagi',''),
+        event('06:25','06:30','Persiapan Apel Pagi',''),
+        event('06:30','07:15','Apel Pagi',''),
+        event('07:15','07:30','Jeda / Persiapan Kuliah',''),
+        event('07:30','10:00','Perkuliahan','Manajemen Keuangan • Ruang N 303','Kuliah'),
+        event('10:00','11:30','Kegiatan Produktif','Mulai jam 11 boleh istirahat di kamar'),
+        event('11:30','13:10','Perkuliahan','Bahasa Inggris • Ruang N 714','Kuliah'),
+        event('13:10','14:00','Istirahat Siang','Lakukan presensi makan siang'),
+        event('14:00','17:45','Kegiatan Produktif',''),
+        event('17:45','17:55','Pembersihan Diri & Kamar',''),
+        event('17:55','18:25','Persiapan Ibadah & Presensi Ibadah',''),
+        event('18:25','18:50','Makan Malam Komando','(Batas Turun 18.25)'),
+        event('18:50','18:55','Presensi Ibadah Mahasiswa Muslim',''),
+        event('18:55','19:10','Moving Ke MAS',''),
+        event('19:10','19:20','Ibadah Isya',''),
+        event('19:20','19:30','Moving Kembali ke Asrama (mhs Muslim)',''),
+        event('19:30','20:00','Kegiatan Mandiri',''),
+        event('20:00','21:15','Pengecekan Malam (Di Depan Lift)',''),
+        event('21:15','24:00','Tidur','')
+      ],
+      Rabu: [
+        event('00:00','04:00','Tidur',''),
+        event('04:00','04:20','Bangun Tidur',''),
+        event('04:20','04:35','Presensi dan Ibadah Non Muslim',''),
+        event('04:35','04:40','Persiapan',''),
+        event('04:40','04:45','Presensi Ibadah Mahasiswa Muslim',''),
+        event('04:45','04:50','Moving ke MAS',''),
+        event('04:50','05:10','Ibadah Pagi/Salat Subuh',''),
+        event('05:10','05:20','Moving ke Asrama',''),
+        event('05:20','05:30','Pembersihan Diri & Kamar',''),
+        event('05:30','06:00','Pembersihan Umum (Cipta Bakti)',''),
+        event('06:00','06:05','Persiapan Turun',''),
+        event('06:05','06:25','Makan Pagi Komando',''),
+        event('06:25','06:30','Persiapan Apel Pagi',''),
+        event('06:30','07:15','Apel Pagi',''),
+        event('07:15','09:30','Kegiatan Produktif',''),
+        event('09:30','11:10','Perkuliahan','Statistika Terapan • Ruang N 213','Kuliah'),
+        event('11:10','11:30','Jeda / Persiapan',''),
+        event('11:30','13:10','Perkuliahan','Kewarganegaraan • Ruang N 213','Kuliah'),
+        event('13:10','14:00','Istirahat Siang','Lakukan presensi makan siang'),
+        event('14:00','17:45','Kegiatan Produktif',''),
+        event('17:45','17:55','Pembersihan Diri & Kamar',''),
+        event('17:55','18:25','Persiapan Ibadah & Presensi Ibadah',''),
+        event('18:25','18:50','Makan Malam Komando','(Batas Turun 18.25)'),
+        event('18:50','18:55','Presensi Ibadah Mahasiswa Muslim',''),
+        event('18:55','19:10','Moving Ke MAS',''),
+        event('19:10','19:20','Ibadah Isya',''),
+        event('19:20','19:30','Moving Kembali ke Asrama (mhs Muslim)',''),
+        event('19:30','20:00','Kegiatan Mandiri',''),
+        event('20:00','21:15','Pengecekan Malam (Di Depan Lift)',''),
+        event('21:15','24:00','Tidur','')
+      ],
+      Kamis: [
+        event('00:00','04:00','Tidur',''),
+        event('04:00','04:20','Bangun Tidur',''),
+        event('04:20','04:35','Presensi dan Ibadah Non Muslim',''),
+        event('04:35','04:40','Persiapan',''),
+        event('04:40','04:45','Presensi Ibadah Mahasiswa Muslim',''),
+        event('04:45','04:50','Moving ke MAS',''),
+        event('04:50','05:10','Ibadah Pagi/Salat Subuh',''),
+        event('05:10','05:20','Moving ke Asrama',''),
+        event('05:20','05:30','Pembersihan Diri & Kamar',''),
+        event('05:30','06:00','Pembersihan Umum (Cipta Bakti)',''),
+        event('06:00','06:05','Persiapan Turun',''),
+        event('06:05','06:25','Makan Pagi Komando',''),
+        event('06:25','06:30','Persiapan Apel Pagi',''),
+        event('06:30','07:15','Apel Pagi',''),
+        event('07:15','09:30','Kegiatan Produktif',''),
+        event('09:30','11:10','Perkuliahan','Hukum Perdata • Ruang N 211','Kuliah'),
+        event('11:10','14:00','Istirahat Panjang','Lakukan presensi makan siang'),
+        event('14:00','17:45','Kegiatan Produktif',''),
+        event('17:45','17:55','Pembersihan Diri & Kamar',''),
+        event('17:55','18:25','Persiapan Ibadah & Presensi Ibadah',''),
+        event('18:25','18:50','Makan Malam Komando','(Batas Turun 18.25)'),
+        event('18:50','18:55','Presensi Ibadah Mahasiswa Muslim',''),
+        event('18:55','19:10','Moving Ke MAS',''),
+        event('19:10','19:20','Ibadah Isya',''),
+        event('19:20','19:30','Moving Kembali ke Asrama (mhs Muslim)',''),
+        event('19:30','20:00','Kegiatan Mandiri',''),
+        event('20:00','21:15','Pengecekan Malam (Di Depan Lift)',''),
+        event('21:15','24:00','Tidur','')
+      ],
+      Jumat: [
+        event('00:00','04:00','Tidur',''),
+        event('04:00','04:20','Bangun Tidur',''),
+        event('04:20','04:35','Presensi dan Ibadah Non Muslim',''),
+        event('04:35','04:40','Persiapan',''),
+        event('04:40','04:45','Presensi Ibadah Mahasiswa Muslim',''),
+        event('04:45','04:50','Moving ke MAS',''),
+        event('04:50','05:10','Ibadah Pagi/Salat Subuh',''),
+        event('05:10','05:20','Moving ke Asrama',''),
+        event('05:20','05:30','Pembersihan Diri & Kamar',''),
+        event('05:30','06:00','Pembersihan Umum (Cipta Bakti)',''),
+        event('06:00','06:05','Persiapan Turun',''),
+        event('06:05','06:25','Makan Pagi Komando',''),
+        event('06:25','06:30','Persiapan Apel Pagi',''),
+        event('06:30','07:15','Apel Pagi',''),
+        event('07:15','16:00','Waktu Fleksibel (Di Kamar)','Lakukan presensi makan siang di antara jam 11.30–14.00'),
+        event('16:00','17:40','Perkuliahan','Pendidikan Antikorupsi • Ruang N 202','Kuliah'),
+        event('17:40','17:45','Jeda',''),
+        event('17:45','17:55','Pembersihan Diri & Kamar',''),
+        event('17:55','18:25','Persiapan Ibadah & Presensi Ibadah',''),
+        event('18:25','18:50','Makan Malam Komando','(Batas Turun 18.25)'),
+        event('18:50','18:55','Presensi Ibadah Mahasiswa Muslim',''),
+        event('18:55','19:10','Moving Ke MAS',''),
+        event('19:10','19:20','Ibadah Isya',''),
+        event('19:20','19:30','Moving Kembali ke Asrama (mhs Muslim)',''),
+        event('19:30','20:00','Kegiatan Mandiri',''),
+        event('20:00','21:15','Pengecekan Malam (Di Depan Lift)',''),
+        event('21:15','24:00','Tidur','')
+      ],
+      Sabtu: [
+        event('00:00','04:00','Tidur',''),
+        event('04:00','04:20','Bangun Tidur',''),
+        event('04:20','04:35','Presensi dan Ibadah Non Muslim',''),
+        event('04:35','04:40','Persiapan',''),
+        event('04:40','04:45','Presensi Ibadah Mahasiswa Muslim',''),
+        event('04:45','04:50','Moving ke MAS',''),
+        event('04:50','05:10','Ibadah Pagi/Salat Subuh',''),
+        event('05:10','05:20','Moving ke Asrama',''),
+        event('05:20','05:30','Pembersihan Diri & Kamar',''),
+        event('05:30','06:00','Pembersihan Umum (Cipta Bakti)',''),
+        event('06:00','06:05','Persiapan Turun',''),
+        event('06:05','06:25','Makan Pagi Komando',''),
+        event('06:25','06:30','Persiapan Apel Pagi',''),
+        event('06:30','07:15','Apel Pagi',''),
+        event('07:15','20:45','Waktu Pesiar / Standby Kamar','(Batas pulang ke asrama jam 20.30)'),
+        event('20:45','21:15','Pengecekan Malam (Di Depan Lift)',''),
+        event('21:15','24:00','Tidur','')
+      ],
+      Minggu: [
+        event('00:00','04:00','Tidur',''),
+        event('04:00','04:20','Bangun Tidur',''),
+        event('04:20','04:35','Presensi dan Ibadah Non Muslim',''),
+        event('04:35','04:40','Persiapan',''),
+        event('04:40','04:45','Presensi Ibadah Mahasiswa Muslim',''),
+        event('04:45','04:50','Moving ke MAS',''),
+        event('04:50','05:10','Ibadah Pagi/Salat Subuh',''),
+        event('05:10','05:20','Moving ke Asrama',''),
+        event('05:20','05:30','Pembersihan Diri & Kamar',''),
+        event('05:30','06:00','Pembersihan Umum (Cipta Bakti)',''),
+        event('06:00','06:25','Waktu Luang / Mandiri',''),
+        event('06:25','06:30','Persiapan Apel Pagi',''),
+        event('06:30','07:15','Apel Pagi',''),
+        event('07:15','20:45','Waktu Pesiar / Standby Kamar','(Batas pulang ke asrama jam 20.30)'),
+        event('20:45','21:15','Pengecekan Malam (Di Depan Lift)',''),
+        event('21:15','24:00','Tidur','')
+      ]
+    };
+
+    let selectedDay = 'Senin'; 
+    let mondayVariant = 'Upacara'; 
+    let toastTimer;
+    
+    const $ = id => document.getElementById(id);
+    
+    const partsWIB = () => { 
+      const result = Object.fromEntries(new Intl.DateTimeFormat('id-ID',{timeZone:'Asia/Jakarta',weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts().filter(p=>p.type!=='literal').map(p=>[p.type,p.value])); 
+      return result; 
+    };
+    
+    const minute = value => { const [h,m] = value.split(':').map(Number); return h * 60 + m; };
+    const getItems = day => day === 'Senin' ? schedule.Senin[mondayVariant] : schedule[day];
+    const formatRange = item => `${item.start.replace(':','.')} – ${item.end === '24:00' ? '00.00' : item.end.replace(':','.')} WIB`;
+    
+    const showToast = text => { 
+      $('toast').textContent = text; 
+      $('toast').classList.add('show'); 
+      clearTimeout(toastTimer); 
+      toastTimer = setTimeout(()=>$('toast').classList.remove('show'), 2600); 
+    };
+    
+    function renderTabs(){ 
+      $('day-tabs').innerHTML = days.map(day => `<button class="tab" role="tab" aria-selected="${day===selectedDay}" data-day="${day}">${day}</button>`).join(''); 
+    }
+    
+    function renderTimeline(){
+      const now = partsWIB(), nowMinutes = minute(`${now.hour}:${now.minute}`), isToday = selectedDay === now.weekday, items = getItems(selectedDay);
+      
+      $('monday-switch').classList.toggle('show', selectedDay === 'Senin');
+      document.querySelectorAll('.variant').forEach(btn => btn.classList.toggle('active', btn.dataset.variant === mondayVariant));
+      
+      let nextIndex = isToday ? items.findIndex(i => minute(i.start) > nowMinutes) : -1;
+      
+      $('timeline').innerHTML = items.map((item, index) => { 
+        const active = isToday && nowMinutes >= minute(item.start) && nowMinutes < minute(item.end); 
+        const next = isToday && index === nextIndex; 
+        return `<article class="item ${active ? 'active' : ''} ${next ? 'next' : ''}"><time class="item-time">${formatRange(item)}</time><div class="rail"><span class="node"></span></div><div><h3>${item.title}</h3>${item.desc ? `<p>${item.desc}</p>` : ''}${item.meta ? `<span class="tag">${item.meta}</span>` : ''}</div></article>`; 
+      }).join('');
+    }
+    
+    function findState(){
+      const now = partsWIB(), today = now.weekday, nowMinutes = minute(`${now.hour}:${now.minute}`), items = getItems(today);
+      const current = items.find(i => nowMinutes >= minute(i.start) && nowMinutes < minute(i.end)); 
+      let next = items.find(i => minute(i.start) > nowMinutes);
+      
+      if(!next){ const tomorrow = days[(days.indexOf(today) + 1) % 7]; next = getItems(tomorrow)[0]; }
+      return {now, today, nowMinutes, current, next};
+    }
+    
+    function renderLive(){
+      const {now, today, nowMinutes, current, next} = findState(); 
+      
+      // Update format text hari ini (Contoh: Senin, 27 Juli 2026)
+      $('today-label').textContent = `${now.weekday}, ${now.day} ${now.month} ${now.year}`; 
+      $('clock').textContent = `${now.hour}:${now.minute} WIB`;
+      
+      if(current){ 
+        const length = minute(current.end) - minute(current.start), pct = Math.max(0, Math.min(100, (nowMinutes - minute(current.start)) / length * 100)); 
+        $('live-state').textContent = `BERLANGSUNG SAAT INI • ${formatRange(current)}`; 
+        $('live-title-text').textContent = current.title; 
+        $('live-description').textContent = current.desc || "Kegiatan berlangsung sesuai jadwal yang telah ditentukan."; 
+        $('progress').style.width = `${pct}%`; 
+      }
+      else { 
+        $('live-state').textContent = 'WAKTU TRANSISI'; 
+        $('live-title-text').textContent = 'Fase Transisi Waktu'; 
+        $('live-description').textContent = 'Silakan bernapas sejenak dan bersiap untuk aktivitas selanjutnya.'; 
+        $('progress').style.width = '0%'; 
+      }
+      
+      $('next-time').textContent = next.start.replace(':','.'); 
+      $('next-text').textContent = `Berikutnya: ${next.title}`;
+    }
+    
+    function refresh(){ renderLive(); renderTimeline(); }
+    
+    $('day-tabs').addEventListener('click', e => {
+      const day = e.target.dataset.day;
+      if(!day) return;
+      selectedDay = day;
+      renderTabs();
+      renderTimeline();
+    });
+    
+    $('monday-switch').addEventListener('click', e => {
+      const variant = e.target.dataset.variant;
+      if(!variant) return;
+      mondayVariant = variant;
+      refresh();
+    });
+    
+    $('jump-today').onclick = () => {
+      selectedDay = findState().today;
+      renderTabs();
+      renderTimeline();
+      $('schedule-section').scrollIntoView({behavior: 'smooth', block: 'start'});
+    };
+    
+    $('focus-toggle').onclick = e => {
+      const active = document.body.classList.toggle('focus-active');
+      e.currentTarget.setAttribute('aria-pressed', active);
+      e.currentTarget.textContent = active ? '◑ Matikan Mode Fokus' : '◐ Mode Fokus';
+      showToast(active ? 'Mode fokus aktif. Elemen sekunder disembunyikan.' : 'Mode fokus dimatikan.');
+    };
+    
+    // Notes logic
+    const notes = $('notes'); 
+    notes.value = localStorage.getItem('ruang-waktu-notes') || ''; 
+    let saveTimer; 
+    notes.addEventListener('input', () => { 
+      $('save-state').textContent = 'Menyimpan...';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        localStorage.setItem('ruang-waktu-notes', notes.value);
+        $('save-state').textContent = 'Tersimpan otomatis.';
+      }, 300);
+    }); 
+    
+    $('clear-notes').onclick = () => {
+      notes.value = '';
+      localStorage.removeItem('ruang-waktu-notes');
+      $('save-state').textContent = 'Catatan telah dihapus.';
+    };
+    
+    // Init
+    selectedDay = findState().today; 
+    renderTabs(); 
+    refresh(); 
+    setInterval(refresh, 30000); // update tiap 30 detik
+  </script>
+</body>
+</html>
